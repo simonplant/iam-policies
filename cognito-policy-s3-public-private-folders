@@ -1,0 +1,56 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [{
+        "Action": ["s3:ListBucket"],
+        "Effect": "Allow",
+        "Resource": ["arn:aws:s3:::myapp"],
+        "Condition": {
+            "StringLike": {
+                "s3:prefix": ["priv/${cognito-identity.amazonaws.com:sub}/*"]
+            }
+        }
+    }, {
+        "Action": ["s3:GetObject", "s3:PutObject"],
+        "Effect": "Allow",
+        "Resource": ["arn:aws:s3:::myapp/priv/${cognito-identity.amazonaws.com:sub}/*"]
+    }, {
+        "Action": ["s3:ListBucket"],
+        "Effect": "Allow",
+        "Resource": ["arn:aws:s3:::myapp"],
+        "Condition": {
+            "StringLike": {
+                "s3:prefix": ["pub/*"]
+            }
+        }
+    }, {
+        "Action": ["s3:GetObject"],
+        "Effect": "Allow",
+        "Resource": ["arn:aws:s3:::myapp/pub/*"]
+    }, {
+        "Action": ["s3:PutObject"],
+        "Effect": "Allow",
+        "Resource": ["arn:aws:s3:::myapp/pub/${cognito-identity.amazonaws.com:sub}/*"]
+    }, {
+        "Effect": "Allow",
+        "Action": ["dynamodb:GetItem", "dynamodb:BatchGetItem", "dynamodb:Query", "dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:DeleteItem", "dynamodb:BatchWriteItem"],
+        "Resource": ["arn:aws:dynamodb:<region>:<account-id>:table/private-table"],
+        "Condition": {
+            "ForAllValues:StringEquals": {
+                "dynamodb:LeadingKeys": ["${cognito-identity.amazonaws.com:sub}"]
+            }
+        }
+    }, {
+        "Effect": "Allow",
+        "Action": ["dynamodb:GetItem", "dynamodb:BatchGetItem", "dynamodb:Query"],
+        "Resource": ["arn:aws:dynamodb:<region>:<account-id>:table/shared-table"]
+    }, {
+        "Effect": "Allow",
+        "Action": ["dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:DeleteItem", "dynamodb:BatchWriteItem"],
+        "Resource": ["arn:aws:dynamodb:us-east-1:123456789012:table/shared-table"],
+        "Condition": {
+            "ForAllValues:StringEquals": {
+                "dynamodb:LeadingKeys": ["${cognito-identity.amazonaws.com:sub}"]
+            }
+        }
+    }]
+}
